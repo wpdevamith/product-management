@@ -37,6 +37,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
+                <th>Image</th>
                 <th>ID</th>
                 <th>Product ID</th>
                 <th>Name</th>
@@ -48,6 +49,9 @@
         <tbody>
             @forelse($products as $product)
             <tr>
+                <td>
+                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid" style="max-width: 200px;">
+                </td>
                 <td>{{ $product->id }}</td>
                 <td>{{ $product->product_id }}</td>
                 <td>{{ $product->name }}</td>

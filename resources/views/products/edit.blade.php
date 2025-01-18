@@ -42,4 +42,7 @@
         <button type="submit" class="btn btn-primary">Update Product</button>
     </form>
 </div>
+
+
+
 @endsection

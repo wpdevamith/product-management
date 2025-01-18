@@ -25,7 +25,7 @@ class ProductController extends Controller
             $query->orderBy($request->sort_by, $request->sort_order ?? 'asc');
         }
 
-        $products = $query->paginate(10); 
+        $products = $query->paginate(4); 
         return view('products.index', compact('products'));
     }
 
@@ -75,29 +75,40 @@ class ProductController extends Controller
 
 
     public function update(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
+{
+    // Validate the form inputs
+    $validated = $request->validate([
+        'product_id' => 'required|unique:products,product_id,' . $id,
+        'name' => 'required',
+        'price' => 'required|numeric',
+        'stock' => 'nullable|integer',
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validate image
+    ]);
 
+    // Find the product to update
+    $product = Product::findOrFail($id);
 
-        $validated = $request->validate([
-            'product_id' => 'required|unique:products,product_id,' . $product->id,
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'image' => 'nullable|image|max:2048',
-            'description' => 'nullable|string',
-            'stock' => 'nullable|integer',
-        ]);
-
-
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('images', 'public');
+    // Check if an image is uploaded
+    if ($request->hasFile('image')) {
+        // Delete the old image if it exists
+        if ($product->image && file_exists(public_path($product->image))) {
+            unlink(public_path($product->image));
         }
 
+        // Store the new image in the 'images/products' directory
+        $imagePath = $request->file('image')->store('storage/', 'public');
 
-        $product->update($validated);
-
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+        // Update the image path in the product data
+        $validated['image'] = $imagePath;
     }
+
+    // Update the product with validated data
+    $product->update($validated);
+
+    // Redirect with a success message
+    return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+}
 
 
     public function destroy($id)
